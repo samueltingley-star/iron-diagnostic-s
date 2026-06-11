@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f59e0b" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>IronDiag</title>
+  <style>
+    :root {
+      --bg: #111827;
+      --panel: #1f2937;
+      --panel2: #374151;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --accent: #f59e0b;
+      --danger: #ef4444;
+      --border: #4b5563;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); }
+    header { padding: 18px; background: #030712; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 2; }
+    header h1 { margin: 0; font-size: 26px; }
+    header p { margin: 4px 0 0; color: var(--muted); }
+    main { max-width: 900px; margin: auto; padding: 16px; padding-bottom: 80px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+    label { display: block; margin: 12px 0 6px; color: var(--muted); font-size: 14px; }
+    input, select, textarea, button { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #111827; color: var(--text); font-size: 16px; }
+    textarea { min-height: 90px; resize: vertical; }
+    button { background: var(--accent); color: #111827; font-weight: bold; border: none; margin-top: 12px; cursor: pointer; }
+    button.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+    button.danger { background: var(--danger); color: white; }
+    .grid { display: grid; gap: 12px; }
+    @media (min-width: 700px) { .grid.two { grid-template-columns: 1fr 1fr; } .grid.three { grid-template-columns: 1fr 1fr 1fr; } }
+    .result { background: #0f172a; border-left: 5px solid var(--accent); padding: 12px; border-radius: 8px; margin-top: 12px; white-space: pre-wrap; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: var(--panel2); color: var(--muted); font-size: 12px; margin: 4px 4px 4px 0; }
+    .job { background: #111827; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 10px; }
+    .small { color: var(--muted); font-size: 13px; }
+    .hidden { display: none; }
+    nav { position: fixed; bottom: 0; left: 0; right: 0; display: grid; grid-template-columns: repeat(4, 1fr); background: #030712; border-top: 1px solid var(--border); }
+    nav button { border-radius: 0; margin: 0; background: #030712; color: var(--text); border-right: 1px solid var(--border); font-size: 13px; padding: 12px 4px; }
+    nav button.active { background: var(--accent); color: #111827; }
+    .tab { display: none; }
+    .tab.active { display: block; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>IronDiag</h1>
+  <p>Heavy equipment diagnostic helper</p>
+</header>
+
+<main>
+  <section id="tab-diagnose" class="tab active">
+    <div class="card">
+      <h2>Machine Profile</h2>
+      <div class="grid two">
+        <div><label>Make</label><input id="make" placeholder="Cat, Deere, Komatsu, Case..." /></div>
+        <div><label>Model</label><input id="model" placeholder="299D3, 310SL, PC200..." /></div>
+        <div><label>Serial Number</label><input id="serial" placeholder="Optional" /></div>
+        <div><label>Machine Hours</label><input id="hours" type="number" placeholder="Optional" /></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Symptom Diagnostic</h2>
+      <label>System</label>
+      <select id="system">
+        <option>Hydraulics</option>
+        <option>Electrical / No Start</option>
+        <option>Engine</option>
+        <option>Transmission / Drive</option>
+        <option>DEF / Emissions</option>
+      </select>
+
+      <label>Symptom</label>
+      <select id="symptom">
+        <option value="slow_hydraulics">Hydraulics slow / weak</option>
+        <option value="no_hydraulics">No hydraulic function</option>
+        <option value="overheating_hydraulics">Hydraulic oil overheating</option>
+        <option value="drift">Cylinder drift / attachment drops</option>
+        <option value="noise">Pump noise / cavitation</option>
+        <option value="no_crank">No crank / will not start</option>
+        <option value="custom">Custom symptom</option>
+      </select>
+
+      <label>Complaint</label>
+      <textarea id="complaint" placeholder="Example: Boom raises slow when oil is hot, steering is normal."></textarea>
+      <button onclick="runDiagnostic()">Run Diagnostic</button>
+      <div id="diagnosticResult" class="result hidden"></div>
+    </div>
+  </section>
+
+  <section id="tab-readings" class="tab">
+    <div class="card">
+      <h2>Readings & Tests</h2>
+      <div class="grid three">
+        <div><label>Main Relief Pressure PSI</label><input id="mainPressure" type="number" placeholder="3000" /></div>
+        <div><label>Charge / Pilot Pressure PSI</label><input id="pilotPressure" type="number" placeholder="450" /></div>
+        <div><label>Battery Voltage</label><input id="voltage" type="number" step="0.1" placeholder="12.6" /></div>
+      </div>
+      <label>Fault Codes</label>
+      <textarea id="codes" placeholder="Enter any active or stored codes."></textarea>
+      <label>Notes</label>
+      <textarea id="notes" placeholder="Record tests, sounds, leaks, filter condition, oil level, fault codes, etc."></textarea>
+      <button onclick="evaluateReadings()">Evaluate Readings</button>
+      <div id="readingResult" class="result hidden"></div>
+    </div>
+  </section>
+
+  <section id="tab-save" class="tab">
+    <div class="card">
+      <h2>Save Job</h2>
+      <label>Final Diagnosis / Next Step</label>
+      <textarea id="finalFix" placeholder="Example: Main relief low at 2100 PSI. Adjusted relief and retested."></textarea>
+      <button onclick="saveJob()">Save Job Locally</button>
+      <button class="secondary" onclick="exportJobs()">Export Saved Jobs</button>
+      <button class="danger" onclick="clearJobs()">Clear Saved Jobs</button>
+      <div id="saveStatus" class="small"></div>
+    </div>
+  </section>
+
+  <section id="tab-jobs" class="tab">
+    <div class="card">
+      <h2>Saved Jobs</h2>
+      <div id="jobs"></div>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button class="active" onclick="showTab('diagnose', this)">Diagnose</button>
+  <button onclick="showTab('readings', this)">Readings</button>
+  <button onclick="showTab('save', this)">Save</button>
+  <button onclick="showTab('jobs', this)">Jobs</button>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>
