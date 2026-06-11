@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <title>IronDiagnostics Photo Diagnosis</title>
+
+</head>
+
+<body>
+
+<h1>Photo Diagnosis</h1>
+
+<input type="file"
+
+       accept="image/*"
+
+       capture="environment"
+
+       id="photoInput">
+
+<br><br>
+
+<button onclick="analyzePhoto()">
+
+Analyze Photo
+
+</button>
+
+<pre id="result">
+
+Take or upload a photo.
+
+</pre>
+
+<script>
+
+function analyzePhoto() {
+
+  const file =
+
+    document.getElementById("photoInput").files[0];
+
+  if (!file) {
+
+    document.getElementById("result").innerText =
+
+      "Please select a photo first.";
+
+    return;
+
+  }
+
+  document.getElementById("result").innerText =
+
+`Photo received.
+
+Future versions will identify:
+
+- Fault codes
+
+- Serial numbers
+
+- Components
+
+- Hydraulic leaks
+
+- Hoses
+
+- Filters
+
+- Electrical connectors`;
+
+}
+
+</script>
+
+</body>
+
+</html
