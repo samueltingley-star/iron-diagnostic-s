@@ -221,3 +221,22 @@ if ("serviceWorker" in navigator) {
 }
 
 renderJobs();
+const cameraInput = document.getElementById("cameraInput");
+
+const preview = document.getElementById("preview");
+
+if (cameraInput && preview) {
+
+  cameraInput.addEventListener("change", function () {
+
+    const file = cameraInput.files[0];
+
+    if (file) {
+
+      preview.src = URL.createObjectURL(file);
+
+    }
+
+  });
+
+}
